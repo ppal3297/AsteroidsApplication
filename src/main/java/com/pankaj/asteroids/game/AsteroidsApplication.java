@@ -1,33 +1,37 @@
-package com.pankaj.asteroids;
+package com.pankaj.asteroids.game;
 
+
+import com.pankaj.asteroids.home.GameOverController;
 import javafx.animation.AnimationTimer;
-import javafx.application.Application;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.input.KeyCode;
 import javafx.scene.layout.Pane;
 import javafx.scene.text.Text;
+import javafx.stage.Screen;
 import javafx.stage.Stage;
 
+import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 
-public class AsteroidsApplication extends Application {
-
+public class AsteroidsApplication {
 
     public static int WIDTH = 600;
     public static int HEIGHT = 400;
 
+    public AtomicInteger points;
 
-    @Override
-    public void start(Stage primaryStage) throws Exception {
+    public void startGame(Stage primaryStage) throws Exception {
         Map<KeyCode, Boolean> pressedKeys = new HashMap<>();
         Pane pane = new Pane();
         pane.setPrefSize(WIDTH, HEIGHT);
-        Text text = new Text(10,20, "Points: 0");
+        Text text = new Text(10, 20, "Points: 0");
         pane.getChildren().add(text);
-        AtomicInteger points  = new AtomicInteger();
+        points = new AtomicInteger();
 
 
         Ship ship = new Ship(WIDTH / 2, HEIGHT / 2);
@@ -46,6 +50,7 @@ public class AsteroidsApplication extends Application {
         });
 
         Scene scene = new Scene(pane);
+
 
         scene.setOnKeyPressed(event -> {
             pressedKeys.put(event.getCode(), Boolean.TRUE);
@@ -79,12 +84,24 @@ public class AsteroidsApplication extends Application {
                 }
 
 
-                ship.move();
+            ship.move();
                 asteroids.forEach(asteroid -> asteroid.move());
                 asteroids.forEach(
                         asteroid -> {
                             if (ship.collide(asteroid)) {
                                 stop();
+                                try {
+                                    FXMLLoader loader = new FXMLLoader();
+                                    loader.setLocation(getClass().getResource("/GameOver.fxml"));
+                                    GameOverController controller = loader.getController();
+                                    controller.setCurrent_score(points);
+                                    Parent root = (Parent)loader.load();
+                                    primaryStage.setScene(new Scene(root));
+                                } catch (IOException e) {
+                                    throw new RuntimeException(e);
+                                }
+
+
                             }
                         }
                 );
@@ -96,34 +113,34 @@ public class AsteroidsApplication extends Application {
                 List<Projectile> projectilesToRemove = projectiles.stream()
                         .map(projectile -> {
                             asteroids.forEach(asteroid -> {
-                                if(asteroid.collide(projectile)){
-                                    text.setText("Points: "+ points.addAndGet(1000));
+                                if (asteroid.collide(projectile)) {
+                                    text.setText("Points: " + points.addAndGet(1000));
                                 }
                             });
                             return projectile;
                         }).filter(
-                        projectile -> {
-                            List<Asteroid> collisions = asteroids.stream().filter(
-                                    asteroid -> asteroid.collide(projectile)).collect(Collectors.toList());
-                            if (collisions.isEmpty()
-                            ) {
-                                return false;
-                            }
-                            collisions.stream().forEach(toBeremoved -> {
-                                        asteroids.remove(toBeremoved);
-                                        pane.getChildren().remove(toBeremoved.getCharacter());
+                                projectile -> {
+                                    List<Asteroid> collisions = asteroids.stream().filter(
+                                            asteroid -> asteroid.collide(projectile)).collect(Collectors.toList());
+                                    if (collisions.isEmpty()
+                                    ) {
+                                        return false;
                                     }
-                            );
-                            return true;
-                        }).collect(Collectors.toList());
+                                    collisions.stream().forEach(toBeremoved -> {
+                                                asteroids.remove(toBeremoved);
+                                                pane.getChildren().remove(toBeremoved.getCharacter());
+                                            }
+                                    );
+                                    return true;
+                                }).collect(Collectors.toList());
 
                 projectilesToRemove.stream().forEach(projectile -> {
                     pane.getChildren().remove(projectile.getCharacter());
                     projectiles.remove(projectile);
                 });
-                if(Math.random() < 0.005) {
+                if (Math.random() < 0.005) {
                     Asteroid asteroid = new Asteroid(WIDTH, HEIGHT);
-                    if(!asteroid.collide(ship)) {
+                    if (!asteroid.collide(ship)) {
                         asteroids.add(asteroid);
                         pane.getChildren().add(asteroid.getCharacter());
                     }
@@ -137,8 +154,6 @@ public class AsteroidsApplication extends Application {
         primaryStage.setScene(scene);
         primaryStage.show();
     }
-
-    public static void main(String[] args) {
-        launch(args);
-    }
 }
+
+

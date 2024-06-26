@@ -4,6 +4,8 @@ module com.pankaj.asteriods{
 
     requires org.controlsfx.controls;
 
-    opens com.pankaj.asteroids to javafx.fxml;
-    exports com.pankaj.asteroids;
+    exports com.pankaj.asteroids.home;
+    opens com.pankaj.asteroids.home to javafx.fxml;
+    exports com.pankaj.asteroids.game;
+    opens com.pankaj.asteroids.game to javafx.fxml;
 }

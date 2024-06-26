@@ -1,4 +1,4 @@
-package com.pankaj.asteroids;
+package com.pankaj.asteroids.game;
 
 
 import java.util.Random;

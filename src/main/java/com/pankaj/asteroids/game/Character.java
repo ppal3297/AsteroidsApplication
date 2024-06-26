@@ -1,4 +1,4 @@
-package com.pankaj.asteroids;
+package com.pankaj.asteroids.game;
 
 import javafx.geometry.Point2D;
 import javafx.scene.shape.Polygon;
